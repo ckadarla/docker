@@ -84,6 +84,7 @@ RUN    cd /tmp && \
        echo -n -e "OK\nDownloading NRPE ${NRPE_VERSION} source code: " && \
        wget -O nrpe.tar.gz "https://github.com/NagiosEnterprises/nrpe/archive/refs/tags/nrpe-${NRPE_VERSION}.tar.gz" && \
        env && \
+       echo -n "Download Nagios Graph ${nagiosgraphversion}"
        echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM !! == " && \
        echo "OK"
 
@@ -140,26 +141,6 @@ RUN    echo -e "\n\n ===========================\n  Configure Nagios Plugins\n =
        make install && \
        echo "Nagios plugins installed successfully: OK"
 
-
-# WORKDIR /usr/local/src/nagiosgraph-${nagiosgraphversion}
-RUN     cd /tmp \
-        wget https://sourceforge.net/projects/nagiosgraph/files/latest/download \
-        tar -zxvf nagiosgraph-1.5.2.tar.gz -C ../ \
-        ./install.pl --check-prereq 
-        # NG_PREFIX=/usr/local/nagiosgraph \
-        # NG_WWW_DIR=/usr/local/nagios/share \
-        # ./install.pl --prefix=/usr/local/nagiosgraph && \
-        # rm -rf /usr/local/src/nagiosgraph-${nagiosgraphversion} 
-### Fix nagiosgraph vhost 
-RUN     cp -prv /usr/local/nagiosgraph/etc/nagiosgraph-apache.conf /etc/apache2/sites-enabled/ && \
-        printf "%s\n" "<Directory \"/usr/local/nagiosgraph/cgi/\">"	\
-                    "  Require all granted"	\
-                     "</Directory>"	\
-            >> /etc/apache2/sites-enabled/nagiosgraph-apache.conf && \
-       
-    ### fix the perfdata log location in nagiosgraph.conf \
-    sed -i 's/\/tmp\/perfdata.log/\/usr\/local\/nagios\/var\/perfdata.log/' /usr/local/nagiosgraph/etc/nagiosgraph.conf
-  
 # Compile NRPE
 RUN    echo -e "\n\n =====================\n  Configure NRPE\n =====================\n" && \
        cd  /tmp/nrpe-nrpe-${NRPE_VERSION} && \
